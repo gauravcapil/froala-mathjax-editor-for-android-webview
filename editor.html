@@ -1,0 +1,125 @@
+<html>
+<head>
+  <link rel="stylesheet" href="css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/froala_editor.css">
+  <link rel="stylesheet" href="css/froala_style.css">
+  <link rel="stylesheet" href="css/plugins/code_view.css">
+  <link rel="stylesheet" href="css/plugins/image_manager.css">
+  <link rel="stylesheet" href="css/plugins/image.css">
+  <link rel="stylesheet" href="css/plugins/table.css">
+  <style>
+    body {
+      text-align: center;
+    }
+
+    
+	.fa-math{margin: 0px !important;}
+	.fa-math::before {
+    content: "Math";
+	width: 100px !important;
+	}
+	mathtag{
+		color:#FF0000;
+		border:2px;
+	}
+	.mathdivPreview{
+		position:relative;
+		text-align:left;
+		z-index:1;
+		margin-top:1px;
+		border-style: solid;
+		background-color: #fff;
+		display:inline-block;
+	}
+  </style>
+</head>
+<body style='margin:0px;'>
+  <div id="editor">
+    <form>
+      <textarea id='edit' placeholder="Type some text">	  
+      </textarea>
+    </form>
+  </div>
+  <div class="mathdivPreview" style="display:none;">
+	<div>Equation Preview</div>
+	<div id="mathdiv">
+	</div>
+	</div>
+</body>
+</html>
+
+<script type="text/javascript" src="js/jquery-3.1.1.min.js"></script>
+<script type="text/javascript" src="js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="js/froala_editor.min.js"></script>
+<script type="text/javascript" src="js/plugins/align.min.js"></script>
+<script type="text/javascript" src="js/plugins/code_beautifier.min.js"></script>
+<script type="text/javascript" src="js/plugins/code_view.min.js"></script>
+<script type="text/javascript" src="js/plugins/draggable.min.js"></script>
+<script type="text/javascript" src="js/plugins/image.min.js"></script>
+<script type="text/javascript" src="js/plugins/image_manager.min.js"></script>
+<script type="text/javascript" src="js/plugins/link.min.js"></script>
+<script type="text/javascript" src="js/plugins/lists.min.js"></script>
+<script type="text/javascript" src="js/plugins/paragraph_format.min.js"></script>
+<script type="text/javascript" src="js/plugins/paragraph_style.min.js"></script>
+<script type="text/javascript" src="js/plugins/table.min.js"></script>
+<script type="text/javascript" src="js/plugins/url.min.js"></script>
+<script type="text/javascript" src="js/plugins/entities.min.js"></script>
+<script type="text/javascript" src="js/MathJax-master/MathJax.js?config=AM_HTMLorMML-full"></script>
+<script  type="text/javascript" >
+function showequation(elem)
+{
+	console.log("show eq was called");
+	$(".mathdivPreview").show();
+	preview_offsets=($(elem).offset());
+	preview_offsets.top+=25;
+	$(".mathdivPreview").offset(preview_offsets);
+	$("#mathdiv").html("`"+elem.html()+"`");
+	MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+}
+
+function mutationHandler (mutationRecords) {
+
+    mutationRecords.forEach ( function (mutation) {
+		showequation($(mutationRecords[0].target.parentElement)	);
+    } );
+}
+
+mathtag_counter=0;
+
+$(document).ready(function(){
+
+		$('#edit').on('froalaEditor.initialized', function (e, editor) {})
+		 .froalaEditor({enter: $.FroalaEditor.ENTER_P, placeholderText: null,height: 200})
+		 .on('froalaEditor.contentChanged', function (e, editor) {
+		  console.log($(this).froalaEditor('html.getSelected')+$(this).froalaEditor('html.getSelected').search("<mathtag>"));
+		if($(this).froalaEditor('html.getSelected').search("<mathtag>")==-1)
+		{
+			$(".mathdivPreview").hide();
+		}
+
+		if(	$("mathtag").count!=mathtag_counter)
+		{
+			$("mathtag").count=mathtag_counter;
+			$("mathtag").click(function(){
+				showequation($(this));
+				});
+			$("mathtag").mousemove(function(){
+				showequation($(this));
+				});
+			var targetNodes         = $("mathtag");
+			var MutationObserver    = window.MutationObserver || window.WebKitMutationObserver;
+			var myObserver          =null;
+			myObserver= new MutationObserver (mutationHandler);
+			var obsConfig           = { characterData: true, subtree: true };
+			targetNodes.each ( function () {
+				myObserver.observe (this, obsConfig);
+			} );
+		}
+	  });
+	  $(document).keyup(function(e) {
+    	setTimeout(
+		function(){alert($("#edit").val())}
+		,1000);
+	  });
+});
+</script>
